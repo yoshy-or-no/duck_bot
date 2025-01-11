@@ -118,7 +118,7 @@ class AtomicDuckBotFunction(AtomicBotFunctionABC):
 
 # Основная функция для запуска бота
 def main():
-    TOKEN = "7954913274:AAEQM6HFkVaCthizXe5y8YxnBPJWKFC373I"  # Замените на токен вашего бота
+    TOKEN = "TBOTTOKEN"  # Замените на токен вашего бота
     app = ApplicationBuilder().token(TOKEN).build()
 
     bot_function = AtomicDuckBotFunction()

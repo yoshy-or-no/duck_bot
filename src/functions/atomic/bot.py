@@ -1,13 +1,14 @@
-import os
-import random
+"""Module for working with a duck bot."""
+
 from io import BytesIO
 from typing import List
-from PIL import Image
+from PIL import Image  # Ensure PIL is installed with `pip install pillow`
 import requests
 import telebot
 from telebot import types
 from telebot.callback_data import CallbackData
 from bot_func_abc import AtomicBotFunctionABC
+
 
 class AtomicDuckBotFunction(AtomicBotFunctionABC):
     """Class for implementing the /ducks command functionality."""
@@ -20,6 +21,11 @@ class AtomicDuckBotFunction(AtomicBotFunctionABC):
         "Specify the number of ducks you want to see and the format for saving!"
     )
     state: bool = True
+
+    def __init__(self):
+        """Initializes the bot and the duck keyboard factory."""
+        self.bot = None
+        self.duck_keyboard_factory = None
 
     def set_handlers(self, app: telebot.TeleBot):
         """Sets up handlers for commands and buttons."""
@@ -47,8 +53,6 @@ class AtomicDuckBotFunction(AtomicBotFunctionABC):
                 app.register_next_step_handler(call.message, self.__process_count_step)
             else:
                 app.answer_callback_query(call.id, "Invalid button")
-
-        # Additional handlers can be added here
 
     def __process_count_step(self, message: types.Message):
         """Processes the number of ducks entered by the user."""

@@ -1,8 +1,6 @@
-"""Module for working with a duck bot."""
-
 from io import BytesIO
 from typing import List
-from PIL import Image  # Ensure PIL is installed with `pip install pillow`
+from PIL import Image  # Убедитесь, что PIL установлен с помощью `pip install pillow`
 import requests
 import telebot
 from telebot import types
@@ -11,91 +9,91 @@ from bot_func_abc import AtomicBotFunctionABC
 
 
 class AtomicDuckBotFunction(AtomicBotFunctionABC):
-    """Class for implementing the /ducks command functionality."""
+    """Класс для реализации функционала команды /ducks."""
 
     commands: List[str] = ["ducks", "duck"]
     authors: List[str] = ["IHVH"]
-    about: str = "Duck function!"
+    about: str = "Функция с утками!"
     description: str = (
-        "This bot sends random duck images upon the /ducks command. "
-        "Specify the number of ducks you want to see and the format for saving!"
+        "Этот бот отправляет случайные изображения уток по команде /ducks. "
+        "Укажите количество уток, которые вы хотите увидеть, и формат для сохранения!"
     )
     state: bool = True
 
     def __init__(self):
-        """Initializes the bot and the duck keyboard factory."""
+        """Инициализирует бота и фабрику клавиатуры для уток."""
         self.bot = None
         self.duck_keyboard_factory = None
 
     def set_handlers(self, app: telebot.TeleBot):
-        """Sets up handlers for commands and buttons."""
+        """Устанавливает обработчики для команд и кнопок."""
         self.bot = app
         self.duck_keyboard_factory = CallbackData('t_key_button', prefix=self.commands[0])
 
         @app.message_handler(commands=self.commands)
         def ducks_message_handler(message: types.Message):
-            """Handler for the /ducks command."""
-            msg = "Send the number of ducks you want to see (e.g., 3):"
+            """Обработчик команды /ducks."""
+            msg = "Отправьте количество уток, которое вы хотите увидеть (например, 3):"
             force_reply = types.ForceReply(selective=False)
             app.send_message(chat_id=message.chat.id, text=msg, reply_markup=force_reply)
             app.register_next_step_handler(message, self.__process_count_step)
 
         @app.callback_query_handler(func=None, config=self.duck_keyboard_factory.filter())
         def duck_keyboard_callback(call: types.CallbackQuery):
-            """Handler for buttons."""
+            """Обработчик для кнопок."""
             callback_data: dict = self.duck_keyboard_factory.parse(callback_data=call.data)
             t_key_button = callback_data.get('t_key_button', '')
 
             if t_key_button == 'force_reply':
                 force_reply = types.ForceReply(selective=False)
-                text = "Send the number of ducks you want to see (e.g., 3):"
+                text = "Отправьте количество уток, которое вы хотите увидеть (например, 3):"
                 app.send_message(call.message.chat.id, text, reply_markup=force_reply)
                 app.register_next_step_handler(call.message, self.__process_count_step)
             else:
-                app.answer_callback_query(call.id, "Invalid button")
+                app.answer_callback_query(call.id, "Неверная кнопка")
 
     def __process_count_step(self, message: types.Message):
-        """Processes the number of ducks entered by the user."""
+        """Обрабатывает количество уток, введённое пользователем."""
         try:
             chat_id = message.chat.id
             txt = message.text
             if txt.isdigit():
                 count = int(txt)
                 if count <= 0:
-                    raise ValueError("The number must be positive!")
+                    raise ValueError("Число должно быть положительным!")
                 markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
                 markup.add('PNG', 'JPEG')
-                msg = "Select the image format for saving (PNG or JPEG):"
+                msg = "Выберите формат изображения для сохранения (PNG или JPEG):"
                 self.bot.send_message(chat_id, msg, reply_markup=markup)
                 self.bot.register_next_step_handler(message, self.__process_format_step, count)
             else:
-                self.bot.send_message(chat_id, "Enter a valid number.")
+                self.bot.send_message(chat_id, "Введите корректное число.")
         except ValueError as ex:
-            self.bot.reply_to(message, f"Error: {ex}")
+            self.bot.reply_to(message, f"Ошибка: {ex}")
 
     def __process_format_step(self, message: types.Message, count: int):
-        """Processes the format selection for the images."""
+        """Обрабатывает выбор формата изображения для сохранения."""
         try:
             chat_id = message.chat.id
             file_format = message.text.lower()
 
             if file_format not in ['png', 'jpeg']:
-                raise ValueError("Invalid format! Choose PNG or JPEG.")
+                raise ValueError("Неверный формат! Выберите PNG или JPEG.")
 
             duck_images = self.get_duck_images(count, file_format)
 
             for i, img in enumerate(duck_images):
-                self.bot.send_photo(chat_id, img, caption=f"Duck {i + 1}")
+                self.bot.send_photo(chat_id, img, caption=f"Утка {i + 1}")
 
             self.bot.send_message(
                 chat_id, 
-                f"Here are {count} ducks in {file_format.upper()} format! 🦆"
+                f"Вот {count} уток в формате {file_format.upper()}! 🦆"
             )
         except ValueError as ex:
-            self.bot.reply_to(message, f"Error: {ex}")
+            self.bot.reply_to(message, f"Ошибка: {ex}")
 
     def get_duck_images(self, count: int = 2, file_format: str = 'png') -> List[BytesIO]:
-        """Fetches random duck images in the specified format."""
+        """Получает случайные изображения уток в указанном формате."""
         images = []
         for _ in range(count):
             url = "https://random-d.uk/api/randomimg"

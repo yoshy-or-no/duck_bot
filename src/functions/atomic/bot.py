@@ -87,7 +87,10 @@ class AtomicDuckBotFunction(AtomicBotFunctionABC):
             for i, img in enumerate(duck_images):
                 self.bot.send_photo(chat_id, img, caption=f"Duck {i + 1}")
 
-            self.bot.send_message(chat_id, f"Here are {count} ducks in {file_format.upper()} format! 🦆")
+            self.bot.send_message(
+                chat_id, 
+                f"Here are {count} ducks in {file_format.upper()} format! 🦆"
+            )
         except ValueError as ex:
             self.bot.reply_to(message, f"Error: {ex}")
 
